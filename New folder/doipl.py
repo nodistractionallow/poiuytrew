@@ -319,10 +319,60 @@ def display_ball_by_ball(innings_log, innings_num, team_name, runs, balls, wicke
     # Display scorecard after innings
     display_scorecard(bat_tracker, bowl_tracker, team_name, innings_num)
 
+# League Matches Scheduling (Round Robin)
+def generate_round_robin_schedule(team_list_input):
+    """
+    Generates a round-robin schedule where each team plays every other team once.
+    Uses the circle method. Ensures original list is not modified.
+    """
+    local_teams = list(team_list_input) # Use a local copy for manipulation
+
+    if not local_teams:
+        return []
+
+    n_orig = len(local_teams)
+    if n_orig == 0:
+        return []
+
+    if n_orig % 2 != 0:
+        local_teams.append("BYE") # Add a dummy team for even scheduling
+
+    n = len(local_teams)
+
+    final_schedule = []
+
+    for _round_idx in range(n - 1): # n-1 rounds for n teams
+        round_matches = []
+        for i in range(n // 2):
+            team1 = local_teams[i]
+            team2 = local_teams[n - 1 - i]
+            if team1 != "BYE" and team2 != "BYE":
+                round_matches.append((team1, team2))
+        final_schedule.extend(round_matches)
+
+        # Rotate teams for the next round (keeping the first team fixed)
+        if n > 2: # Rotation makes sense for 3+ teams.
+            # Remove the last element from position 1 onwards and insert it at position 1.
+            # Effectively: local_teams[0] is fixed. local_teams[1:] is rotated.
+            fixed_element = local_teams[0]
+            rotating_part = local_teams[1:]
+
+            last_of_rotating = rotating_part.pop()
+            rotating_part.insert(0, last_of_rotating)
+
+            local_teams = [fixed_element] + rotating_part
+
+    return final_schedule
+
 # League Matches
-for i in range(len(teams)):
-    for j in range(i + 1, len(teams)):
-        team1, team2 = teams[i], teams[j]
+scheduled_matches = generate_round_robin_schedule(teams)
+
+print("\nGenerated Match Schedule:")
+for idx, match in enumerate(scheduled_matches):
+    print(f"Match {idx+1}: {match[0].upper()} vs {match[1].upper()}")
+print("-" * 30) # Separator
+
+for team1, team2 in scheduled_matches:
         print(f"\nMatch: {team1.upper()} vs {team2.upper()}")
         
         try:
