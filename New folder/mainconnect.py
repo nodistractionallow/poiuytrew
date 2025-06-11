@@ -931,6 +931,17 @@ def innings1(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
             
     # print(batterTracker)
     # print(bowlerTracker)
+
+    # DEBUG: Forcing a tie for Super Over test at the end of innings2
+    if not targetChased: # Only force tie if target wasn't already chased and innings concluded naturally or by wickets
+        print(f"\nDEBUG: Innings 2 concluded. Original runs: {runs}, target: {target}, wickets: {wickets}, balls: {balls}")
+        print("DEBUG: Forcing winner = 'tie' and relevant winMsg for Super Over test.")
+        # These variables are global within mainconnect.py and will be picked up by game()
+        # Note: 'winner' and 'winMsg' are global variables.
+        # Their direct assignment here will affect the values game() function sees.
+        winner = "tie"
+        winMsg = "Match Tied (Forced for Super Over Test)"
+
     batsmanTabulate = []
     # Determine the player initials of the batsmen who were at the crease if the innings ended.
     # These are based on the 'onStrike' and the other batter (batter1/batter2) at the point the loop terminated.
@@ -2079,6 +2090,15 @@ def innings2(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
             
     # print(batterTracker)
     # print(bowlerTracker)
+
+    # DEBUG: Forcing a tie for Super Over test at the end of innings2
+    if not targetChased: # Only force tie if target wasn't already chased and innings concluded naturally or by wickets
+        print(f"\nDEBUG: Innings 2 concluded. Original runs: {runs}, target: {target}, wickets: {wickets}, balls: {balls}")
+        print("DEBUG: Forcing winner = 'tie' and relevant winMsg for Super Over test.")
+        # These variables are global within mainconnect.py and will be picked up by game()
+        winner = "tie"
+        winMsg = "Match Tied (Forced for Super Over Test)"
+
     batsmanTabulate = []
     # Determine the player initials of the batsmen who were at the crease if the innings ended.
     # These are based on the 'onStrike' and the other batter (batter1/batter2) at the point the loop terminated.
@@ -2264,6 +2284,43 @@ def game(manual=True, sentTeamOne=None, sentTeamTwo=None, switch="group"):
 
     innings2(getBatting()[1], getBatting()[0], getBatting()[3], getBatting()[
             2], paceFactor, spinFactor, outfield, dew, detoriate)
+
+        # Check if the main match was a tie.
+        # 'winner' and 'winMsg' are global-like variables updated by innings1/innings2.
+        if winner == "tie":
+            print("Main match tied! Proceeding to Super Over...")
+
+            # Determine teams for Super Over:
+            # Team batting first in Super Over is the team that batted second in the main match.
+            # getBatting()[0] = team info for team that batted first in match
+            # getBatting()[1] = team info for team that batted second in match
+            # getBatting()[2] = name of team that batted first in match
+            # getBatting()[3] = name of team that batted second in match
+
+            so_bat_info = getBatting()[1]
+            so_bowl_info = getBatting()[0]
+            so_bat_name = getBatting()[3]
+            so_bowl_name = getBatting()[2]
+
+            super_over_log_filename = f"scores/{so_bat_name}_vs_{so_bowl_name}_{switch}_superover.txt" # 'switch' is a param of game()
+
+            # playerInfoJSON is assumed to be globally available (e.g. from accessJSON module or loaded in mainconnect)
+            # paceFactor, spinFactor, outfield are local to game()
+            # The placeholder simulate_super_over function is defined at the end of this file.
+            so_w, so_wm, _, _, _, _ = simulate_super_over(
+                so_bat_info,
+                so_bowl_info,
+                so_bat_name,
+                so_bowl_name,
+                playerInfoJSON, # This needs to be defined/accessible in game() scope.
+                                # For now, assuming it's a global provided by accessJSON or similar.
+                paceFactor, spinFactor, outfield,
+                super_over_log_filename
+            )
+
+            # Update the main game's winner and winMsg with Super Over results
+            winner = so_w      # Update game-level variable
+            winMsg = so_wm      # Update game-level variable
     sys.stdout.close()
     sys.stdout=stdoutOrigin
     # print(innings1Log)
@@ -2280,3 +2337,236 @@ def game(manual=True, sentTeamOne=None, sentTeamTwo=None, switch="group"):
 
 
 # game()
+
+# Actual Super Over Simulation Logic
+def _select_super_over_players(team_info_list, player_info_json_global, num_batters, num_bowlers, team_name_for_log): # Added team_name_for_log
+    """
+    Helper to select players for Super Over.
+    team_info_list: List of player objects for the specific team.
+    player_info_json_global: The global player database (assumed to be a list of all player objects from both teams for this match).
+    """
+
+    # Enrich team_info_list with full stats from player_info_json_global for sorting
+    # This assumes player objects in team_info_list can be matched with those in player_info_json_global
+    # based on 'playerInitials' or another unique key. For simplicity, we'll assume team_info_list
+    # already contains the rich player objects if it's directly from team1Info/team2Info.
+
+    # Select Batters
+    # Sort by matches, then batRunsTotal, then batBallsTotal
+    # We need to ensure player objects in team_info_list have these keys.
+    # The original player objects from accessJSON.getPlayerInfo() should have them.
+
+    possible_batters = sorted(
+        team_info_list,
+        key=lambda p: (
+            p.get('matches', 0),
+            p.get('batRunsTotal', 0),
+            p.get('batBallsTotal', 0)
+        ),
+        reverse=True
+    )
+    selected_batters = possible_batters[:num_batters]
+    if len(selected_batters) < num_batters: # Fallback if not enough players
+        selected_batters.extend(team_info_list[:num_batters - len(selected_batters)])
+
+
+    # Select Bowlers
+    # Sort by matches, then bowlOutsTotal, then bowlBallsTotal
+    possible_bowlers = sorted(
+        team_info_list,
+        key=lambda p: (
+            p.get('matches', 0),
+            p.get('bowlOutsTotal', 0),
+            p.get('bowlBallsTotal', 0)
+        ),
+        reverse=True
+    )
+    selected_bowlers = possible_bowlers[:num_bowlers]
+    if len(selected_bowlers) < num_bowlers: # Fallback
+        selected_bowlers.extend(team_info_list[:num_bowlers - len(selected_bowlers)])
+
+    print(f"--- Super Over Player Selection for {team_name_for_log.upper()} ---")
+    print(f"Selected Batters: {[p.get('displayName', p.get('playerInitials', 'Unknown')) for p in selected_batters]}") # Added .get for safety
+    if selected_bowlers and selected_bowlers[0]: # Check if a bowler was selected and is not None
+        print(f"Selected Bowler: {selected_bowlers[0].get('displayName', selected_bowlers[0].get('playerInitials', 'Unknown'))}") # Added .get for safety
+    else:
+        print(f"Selected Bowler: None")
+
+    return {
+        "batters": selected_batters,
+        "bowler": selected_bowlers[0] if selected_bowlers else (team_info_list[0] if team_info_list else None) # Fallback for bowler
+    }
+
+def _simulate_one_super_over_inning(inning_bat_team_name_str, inning_bowl_team_name_str,
+                                     selected_batters_list, selected_bowler_obj,
+                                     target_runs_to_chase, base_player_stats_db, # base_player_stats_db is playerInfoJSON_global
+                                     over_prefix_str, current_match_log_path_so): # Added log path
+
+    # Initialize trackers for this SO inning
+    so_batter_tracker = {p['playerInitials']: {'runs': 0, 'balls': 0, 'ballLog': []} for p in selected_batters_list}
+    so_bowler_tracker = {selected_bowler_obj['playerInitials']: {'runs': 0, 'balls': 0, 'wickets': 0, 'ballLog': []}} if selected_bowler_obj else {}
+
+    current_runs = 0
+    current_wickets = 0
+    legal_balls_bowled = 0
+    super_over_ball_log = []
+
+    if not selected_batters_list or len(selected_batters_list) < 2 or not selected_bowler_obj:
+        print(f"Error: Insufficient players for Super Over inning ({inning_bat_team_name_str} vs {inning_bowl_team_name_str}).")
+        return 0, 2, [], so_batter_tracker, so_bowler_tracker # Auto-lose if players can't be selected
+
+    batter_on_strike = selected_batters_list[0]
+    batter_non_strike = selected_batters_list[1]
+
+    bowler_initials = selected_bowler_obj['playerInitials']
+
+    print(f"--- SUPER OVER INNING: {inning_bat_team_name_str.upper()} batting, {selected_bowler_obj['displayName']} bowling ---")
+
+    for ball_num in range(1, 7): # 6 legal balls
+        if current_wickets >= 2: break
+        if target_runs_to_chase != -1 and current_runs > target_runs_to_chase: break
+
+        # Simplified: Assume no wides or no-balls for Super Over placeholder for now
+        # In a real version, this would be more complex.
+        legal_balls_bowled += 1
+        current_ball_identifier = f"{over_prefix_str}.{legal_balls_bowled}"
+
+        # Get stats for current players
+        batter_stats = base_player_stats_db.get(batter_on_strike['playerInitials'], batter_on_strike) # Fallback to list obj if not in DB
+        bowler_stats = base_player_stats_db.get(bowler_initials, selected_bowler_obj)
+
+        # Simplified probability logic
+        denAvg = {}
+        # Averaging logic (ensure keys exist, provide default if not)
+        for r in ['0', '1', '2', '3', '4', '6']:
+            bat_prob = batter_stats.get('batRunDenominationsObject', {}).get(r, 0.15) # Default if no stats
+            bowl_prob = bowler_stats.get('bowlRunDenominationsObject', {}).get(r, 0.15)
+            denAvg[r] = (bat_prob + bowl_prob) / 2
+
+        # Normalize denAvg to sum to (1 - out_avg_for_this_ball_type)
+        # For simplicity, we'll assume out_avg is separate and denAvg sums to ~1 for runs if not out
+        outAvg = (batter_stats.get('batOutsRate', 0.1) + bowler_stats.get('bowlOutsRate', 0.1)) / 2
+        outAvg = max(0.01, min(outAvg, 0.5)) # Bound out probability
+
+        # Normalize denAvg to sum to (1.0 - outAvg)
+        current_den_sum = sum(denAvg.values())
+        if current_den_sum > 0 :
+            renormalize_factor = (1.0 - outAvg) / current_den_sum
+            for r in denAvg: denAvg[r] *= renormalize_factor
+        else: # if sum is 0, distribute 1-outAvg to 0s and 1s
+            denAvg['0'] = (1.0 - outAvg) / 2
+            denAvg['1'] = (1.0 - outAvg) / 2
+
+
+        outcome_decider = random.random()
+
+        ball_event_desc = ""
+
+        if outcome_decider < outAvg: # WICKET
+            current_wickets += 1
+            ball_event_desc = "WICKET!"
+            print(f"{current_ball_identifier} {bowler_stats['displayName']} to {batter_stats['displayName']}: WICKET! ({current_runs}/{current_wickets})")
+            super_over_ball_log.append(f"{current_ball_identifier}:W-{batter_stats['displayName']}-b{bowler_stats['displayName']}")
+
+            so_batter_tracker[batter_on_strike['playerInitials']]['balls'] += 1
+            so_batter_tracker[batter_on_strike['playerInitials']]['ballLog'].append("W")
+            so_bowler_tracker[bowler_initials]['balls'] += 1
+            so_bowler_tracker[bowler_initials]['wickets'] += 1
+            so_bowler_tracker[bowler_initials]['ballLog'].append("W")
+
+            if current_wickets < 2:
+                batter_on_strike = batter_non_strike # Next batter comes in (simplified: non-striker takes strike)
+                # Non-striker remains same, as only 2 batters allowed
+        else:
+            run_decider = random.random()
+            cumulative_prob = 0
+            runs_this_ball = 0
+            for r_str, prob in denAvg.items():
+                cumulative_prob += prob
+                if run_decider < cumulative_prob:
+                    runs_this_ball = int(r_str)
+                    break
+
+            current_runs += runs_this_ball
+            ball_event_desc = f"{runs_this_ball} run{'s' if runs_this_ball != 1 else ''}"
+            print(f"{current_ball_identifier} {bowler_stats['displayName']} to {batter_stats['displayName']}: {runs_this_ball} run{'s' if runs_this_ball != 1 else ''}! ({current_runs}/{current_wickets})")
+            super_over_ball_log.append(f"{current_ball_identifier}:{runs_this_ball}")
+
+            so_batter_tracker[batter_on_strike['playerInitials']]['runs'] += runs_this_ball
+            so_batter_tracker[batter_on_strike['playerInitials']]['balls'] += 1
+            so_batter_tracker[batter_on_strike['playerInitials']]['ballLog'].append(str(runs_this_ball))
+            so_bowler_tracker[bowler_initials]['runs'] += runs_this_ball
+            so_bowler_tracker[bowler_initials]['balls'] += 1
+            so_bowler_tracker[bowler_initials]['ballLog'].append(str(runs_this_ball))
+
+            if runs_this_ball % 2 == 1:
+                batter_on_strike, batter_non_strike = batter_non_strike, batter_on_strike
+
+        # Log to file (simplified)
+        with open(current_match_log_path_so, "a") as f:
+            f.write(f"{current_ball_identifier}: {inning_bat_team_name_str} - {batter_on_strike['displayName']}: {ball_event_desc}. Score: {current_runs}/{current_wickets}\n")
+
+    return current_runs, current_wickets, super_over_ball_log, so_batter_tracker, so_bowler_tracker
+
+
+def simulate_super_over(batting_team_info_list, bowling_team_info_list, batting_team_name, bowling_team_name, player_info_json_global, pace, spin, outfield, current_match_log_path):
+    print(f"--- Super Over triggered between {batting_team_name.upper()} and {bowling_team_name.upper()} ---")
+
+    # Player Selection
+    bat_team_players = _select_super_over_players(batting_team_info_list, player_info_json_global, 2, 1, batting_team_name) # Pass batting_team_name
+    bowl_team_players = _select_super_over_players(bowling_team_info_list, player_info_json_global, 2, 1, bowling_team_name) # Pass bowling_team_name
+
+    # Innings 1 of Super Over
+    print(f"\n--- {batting_team_name.upper()} Super Over Inning ---")
+    runs_inn1_so, wickets_inn1_so, log_inn1_so, bat_track1_so, bowl_track1_so = _simulate_one_super_over_inning(
+        batting_team_name, bowling_team_name,
+        bat_team_players["batters"], bowl_team_players["bowler"],
+        -1, player_info_json_global, "SO1", current_match_log_path
+    )
+    print(f"End of Super Over Inning 1: {batting_team_name.upper()} scored {runs_inn1_so}/{wickets_inn1_so}")
+
+    # Innings 2 of Super Over
+    print(f"\n--- {bowling_team_name.upper()} Super Over Inning (Target: {runs_inn1_so + 1}) ---")
+    # Now, team that bowled first in SO gets to bat. Their batters are from bowl_team_players["batters"].
+    # The bowler for this inning is from the team that batted first in SO: bat_team_players["bowler"].
+    runs_inn2_so, wickets_inn2_so, log_inn2_so, bat_track2_so, bowl_track2_so = _simulate_one_super_over_inning(
+        bowling_team_name, batting_team_name,
+        bowl_team_players["batters"], bat_team_players["bowler"],
+        runs_inn1_so, player_info_json_global, "SO2", current_match_log_path
+    )
+    print(f"End of Super Over Inning 2: {bowling_team_name.upper()} scored {runs_inn2_so}/{wickets_inn2_so}")
+
+    # Determine Winner
+    super_over_winner = ""
+    super_over_win_msg = ""
+
+    if runs_inn2_so > runs_inn1_so:
+        super_over_winner = bowling_team_name
+        super_over_win_msg = f"{bowling_team_name.upper()} won the Super Over."
+    elif runs_inn1_so > runs_inn2_so:
+        super_over_winner = batting_team_name
+        super_over_win_msg = f"{batting_team_name.upper()} won the Super Over."
+    else:
+        # TODO: Implement further tie-breaking (e.g., boundary count, or another Super Over - though not typical in all tournaments)
+        super_over_winner = "tie" # Or decide based on tournament rules (e.g., team batting second wins if scores level)
+        super_over_win_msg = f"Super Over Tied! (Scores Level: {batting_team_name} {runs_inn1_so} - {bowling_team_name} {runs_inn2_so})"
+        # For placeholder, let's give it to team that scored more boundaries or default to team batting first in SO if not tracked.
+        # As a simple tie-break if Super Over scores are level, often the team with more boundaries in the main match wins.
+        # Or, if boundaries are equal, more boundaries in Super Over. If still tied, countback on last balls.
+        # For now, let's just say the team that batted first in the SO wins if SO scores are equal.
+        print("Super Over scores are level. Further tie-breaking needed (not implemented in placeholder). Awarding to team batting first in SO for now.")
+        super_over_winner = batting_team_name # Fallback tie-break
+        super_over_win_msg = f"{batting_team_name.upper()} won Super Over on tie-break rule (placeholder)."
+
+
+    print(super_over_win_msg)
+
+    # Combine logs and trackers (simplified)
+    final_so_innings_logs = log_inn1_so + log_inn2_so
+    # For trackers, a proper merge would be needed if keys overlap and values need summing.
+    # For this placeholder, just returning them separately or as a simple merge.
+    combined_so_bat_tracker = {**bat_track1_so, **bat_track2_so}
+    combined_so_bowl_tracker = {**bowl_track1_so, **bowl_track2_so}
+
+    # To match the 6-item return tuple expected by game() currently:
+    return super_over_winner, super_over_win_msg, final_so_innings_logs, [], combined_so_bat_tracker, combined_so_bowl_tracker
