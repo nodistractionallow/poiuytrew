@@ -402,10 +402,17 @@ for team1, team2 in scheduled_matches:
             print(random.choice(commentary_lines['end']))
 
             # Track batting/bowling format win
-            if "runs" in resList['winMsg']:
-                battingf += 1
-            else:
-                bowlingf += 1
+            # resList['winner'] will be the actual winner's name (even after a Super Over) or 'tie'
+            # resList['innings1BatTeam'] is the team that batted first in the main match.
+
+            if resList['winner'] != "tie": # A definitive winner was decided (possibly via Super Over)
+                if resList['winner'] == resList['innings1BatTeam']:
+                    battingf += 1 # Team batting first won
+                else:
+                    # This means team batting second won (either in main chase or via Super Over)
+                    bowlingf += 1 # Team bowling first / batting second won
+            # If resList['winner'] IS "tie" (e.g., if Super Over itself was tied and no further tie-break implemented),
+            # then battingf/bowlingf are not incremented, which is correct as neither team "won" by batting/bowling first/second.
 
             # Update batting stats
             for bat_map in [('innings1Battracker', 'innings1BatTeam'), ('innings2Battracker', 'innings2BatTeam')]:
