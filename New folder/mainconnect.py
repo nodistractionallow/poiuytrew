@@ -2291,36 +2291,36 @@ def game(manual=True, sentTeamOne=None, sentTeamTwo=None, switch="group"):
         print("Main match tied! Proceeding to Super Over...")
 
         # Determine teams for Super Over:
-            # Team batting first in Super Over is the team that batted second in the main match.
-            # getBatting()[0] = team info for team that batted first in match
-            # getBatting()[1] = team info for team that batted second in match
-            # getBatting()[2] = name of team that batted first in match
-            # getBatting()[3] = name of team that batted second in match
+        # Team batting first in Super Over is the team that batted second in the main match.
+        # getBatting()[0] = team info for team that batted first in match
+        # getBatting()[1] = team info for team that batted second in match
+        # getBatting()[2] = name of team that batted first in match
+        # getBatting()[3] = name of team that batted second in match
 
-            so_bat_info = getBatting()[1]
-            so_bowl_info = getBatting()[0]
-            so_bat_name = getBatting()[3]
-            so_bowl_name = getBatting()[2]
+        so_bat_info = getBatting()[1]
+        so_bowl_info = getBatting()[0]
+        so_bat_name = getBatting()[3]
+        so_bowl_name = getBatting()[2]
 
-            super_over_log_filename = f"scores/{so_bat_name}_vs_{so_bowl_name}_{switch}_superover.txt" # 'switch' is a param of game()
+        super_over_log_filename = f"scores/{so_bat_name}_vs_{so_bowl_name}_{switch}_superover.txt" # 'switch' is a param of game()
 
-            # playerInfoJSON is assumed to be globally available (e.g. from accessJSON module or loaded in mainconnect)
-            # paceFactor, spinFactor, outfield are local to game()
-            # The placeholder simulate_super_over function is defined at the end of this file.
-            so_w, so_wm, _, _, _, _ = simulate_super_over(
-                so_bat_info,
-                so_bowl_info,
-                so_bat_name,
-                so_bowl_name,
-                playerInfoJSON, # This needs to be defined/accessible in game() scope.
-                                # For now, assuming it's a global provided by accessJSON or similar.
-                paceFactor, spinFactor, outfield,
-                super_over_log_filename
-            )
+        # playerInfoJSON is assumed to be globally available (e.g. from accessJSON module or loaded in mainconnect)
+        # paceFactor, spinFactor, outfield are local to game()
+        # The placeholder simulate_super_over function is defined at the end of this file.
+        so_w, so_wm, _, _, _, _ = simulate_super_over(
+            so_bat_info,
+            so_bowl_info,
+            so_bat_name,
+            so_bowl_name,
+            playerInfoJSON, # This needs to be defined/accessible in game() scope.
+                            # For now, assuming it's a global provided by accessJSON or similar.
+            paceFactor, spinFactor, outfield,
+            super_over_log_filename
+        )
 
-            # Update the main game's winner and winMsg with Super Over results
-            winner = so_w      # Update game-level variable
-            winMsg = so_wm      # Update game-level variable
+        # Update the main game's winner and winMsg with Super Over results
+        winner = so_w      # Update game-level variable
+        winMsg = so_wm      # Update game-level variable
     sys.stdout.close()
     sys.stdout=stdoutOrigin
     # print(innings1Log)
