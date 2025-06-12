@@ -2082,7 +2082,7 @@ def innings2(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
     # print(bowlerTracker)
 
     # DEBUG: Forcing a tie for Super Over test at the end of innings2
-    if not targetChased: # Only force tie if target wasn't already chased and innings concluded naturally or by wickets
+    if winner is None and not targetChased: # Only force tie if target wasn't already chased and innings concluded naturally or by wickets
         print(f"\nDEBUG: Innings 2 concluded. Original runs: {runs}, target: {target}, wickets: {wickets}, balls: {balls}")
         print("DEBUG: Forcing winner = 'tie' and relevant winMsg for Super Over test.")
         # These variables are global within mainconnect.py and will be picked up by game()
@@ -2258,6 +2258,12 @@ def game(manual=True, sentTeamOne=None, sentTeamTwo=None, switch="group"):
         obj = accessJSON.getPlayerInfo(player)
         team2Info.append(obj)
 
+    match_players_stats_dict = {}
+    for player_obj in team1Info:
+        match_players_stats_dict[player_obj['playerInitials']] = player_obj
+    for player_obj in team2Info:
+        match_players_stats_dict[player_obj['playerInitials']] = player_obj
+
     pitchInfo_ = pitchInfo(venue, typeOfPitch)
     paceFactor, spinFactor, outfield = pitchInfo_[
         0], pitchInfo_[1], pitchInfo_[2]
@@ -2304,7 +2310,7 @@ def game(manual=True, sentTeamOne=None, sentTeamTwo=None, switch="group"):
             so_bowl_info,
             so_bat_name,
             so_bowl_name,
-            playerInfoJSON, # This needs to be defined/accessible in game() scope.
+                match_players_stats_dict, # This needs to be defined/accessible in game() scope.
                             # For now, assuming it's a global provided by accessJSON or similar.
             paceFactor, spinFactor, outfield,
             super_over_log_filename
