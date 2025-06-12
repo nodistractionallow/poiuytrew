@@ -932,16 +932,6 @@ def innings1(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
     # print(batterTracker)
     # print(bowlerTracker)
 
-    # DEBUG: Forcing a tie for Super Over test at the end of innings2
-    if not targetChased: # Only force tie if target wasn't already chased and innings concluded naturally or by wickets
-        print(f"\nDEBUG: Innings 2 concluded. Original runs: {runs}, target: {target}, wickets: {wickets}, balls: {balls}")
-        print("DEBUG: Forcing winner = 'tie' and relevant winMsg for Super Over test.")
-        # These variables are global within mainconnect.py and will be picked up by game()
-        # Note: 'winner' and 'winMsg' are global variables.
-        # Their direct assignment here will affect the values game() function sees.
-        winner = "tie"
-        winMsg = "Match Tied (Forced for Super Over Test)"
-
     batsmanTabulate = []
     # Determine the player initials of the batsmen who were at the crease if the innings ended.
     # These are based on the 'onStrike' and the other batter (batter1/batter2) at the point the loop terminated.
