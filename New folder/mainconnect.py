@@ -2285,12 +2285,12 @@ def game(manual=True, sentTeamOne=None, sentTeamTwo=None, switch="group"):
     innings2(getBatting()[1], getBatting()[0], getBatting()[3], getBatting()[
             2], paceFactor, spinFactor, outfield, dew, detoriate)
 
-        # Check if the main match was a tie.
-        # 'winner' and 'winMsg' are global-like variables updated by innings1/innings2.
-        if winner == "tie":
-            print("Main match tied! Proceeding to Super Over...")
+    # Check if the main match was a tie.
+    # 'winner' and 'winMsg' are global-like variables updated by innings1/innings2.
+    if winner == "tie":
+        print("Main match tied! Proceeding to Super Over...")
 
-            # Determine teams for Super Over:
+        # Determine teams for Super Over:
             # Team batting first in Super Over is the team that batted second in the main match.
             # getBatting()[0] = team info for team that batted first in match
             # getBatting()[1] = team info for team that batted second in match
