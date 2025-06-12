@@ -1,7 +1,7 @@
 import random
 import accessJSON
 import copy
-import sys 
+import sys
 import json
 
 MIN_MATCHES_EXPERIENCE = 15
@@ -139,7 +139,7 @@ def normalize_probabilities(prob_dict, target_sum):
 #Player analysis by phases
 from tabulate import tabulate
 
-target = 1 
+target = 1
 
 innings1Batting = None
 innings1Bowling = None
@@ -347,7 +347,7 @@ def innings1(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
                 posAvgObj[str(p)] = 1
 
         for key_p in posAvgObj:
-            posAvgObj[key_p] = posAvgObj[key_p]/i['matches'] 
+            posAvgObj[key_p] = posAvgObj[key_p]/i['matches']
 
         if(len(newPos) != 0):
             posAvg = posTotal/len(newPos)
@@ -360,7 +360,7 @@ def innings1(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
 
     for i in bowling:
         i['bowlBallsTotalRate'] = i['bowlBallsTotal'] / i['matches']
-        bowlerTracker[i['playerInitials']] = {'playerInitials': i['playerInitials'], 'balls': 0, 
+        bowlerTracker[i['playerInitials']] = {'playerInitials': i['playerInitials'], 'balls': 0,
         'runs': 0, 'ballLog': [], 'overs': 0, 'wickets': 0, 'noballs': 0}
         runObj = {}
         outObj = {}
@@ -739,7 +739,7 @@ def innings1(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
             ballLog.append(f"{over}:WD")
             bowlerTracker[blname]['ballLog'].append(f"{over}:WD")
             innings1Log.append({"event": over + f" {bowler['displayName']} to {batter['player']['displayName']}" + " Wide" + " Score: " + str(runs) + "/" + str(wickets),
-                "balls": balls, "batterTracker": copy.deepcopy(batterTracker), "bowlerTracker": copy.deepcopy(bowlerTracker), 
+                "balls": balls, "batterTracker": copy.deepcopy(batterTracker), "bowlerTracker": copy.deepcopy(bowlerTracker),
                 "batsman": btname,"batter1": batter1['player']['playerInitials'] if batter1 else 'N/A', "batter2": batter2['player']['playerInitials'] if batter2 else 'N/A',
                 "bowler": blname, "runs": runs, "wickets": wickets, "type": "WIDE"})
             return "WIDE"
@@ -928,7 +928,7 @@ def innings1(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
             print(f"CRITICAL ERROR (Innings1): No bowlers in selection pool for team {bowlingName}. Innings ends.")
             break
         if wickets == 10: break # Break outer over loop if all out
-            
+
     # print(batterTracker)
     # print(bowlerTracker)
 
@@ -995,12 +995,12 @@ def innings1(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
                 # Else, remains "DNB" if not in this range and didn't bat.
 
         batsmanTabulate.append([btckd_player_initials, runs_scored, balls_faced, sr_val, dismissal_status])
-        
+
     bowlerTabulate = []
     for btrack in bowlerTracker:
         localBowlerTabulate = [btrack, bowlerTracker[btrack]['runs']]
         overs_tb = 0
-        remainder_balls = bowlerTracker[btrack]['balls'] % 6 
+        remainder_balls = bowlerTracker[btrack]['balls'] % 6
         number_overs = bowlerTracker[btrack]['balls'] // 6
         localBowlerTabulate.append(f"{number_overs}.{remainder_balls}")
         localBowlerTabulate.append(bowlerTracker[btrack]['wickets'])
@@ -1013,7 +1013,7 @@ def innings1(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
 
     print(tabulate(batsmanTabulate, ["Player", "Runs", "Balls", "SR" ,"Out"], tablefmt="grid"))
     print(tabulate(bowlerTabulate, ["Player", "Runs", "Overs", "Wickets", "Eco"], tablefmt="grid"))
-        
+
     target = runs + 1
     innings1Balls = balls
     innings1Runs = runs
@@ -1139,7 +1139,7 @@ def innings2(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
                 posAvgObj[str(p)] = 1
 
         for key_p in posAvgObj:
-            posAvgObj[key_p] = posAvgObj[key_p]/i['matches'] 
+            posAvgObj[key_p] = posAvgObj[key_p]/i['matches']
 
         if(len(newPos) != 0):
             posAvg = posTotal/len(newPos)
@@ -1152,7 +1152,7 @@ def innings2(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
 
     for i in bowling:
         i['bowlBallsTotalRate'] = i['bowlBallsTotal'] / i['matches']
-        bowlerTracker[i['playerInitials']] = {'playerInitials': i['playerInitials'], 'balls': 0, 
+        bowlerTracker[i['playerInitials']] = {'playerInitials': i['playerInitials'], 'balls': 0,
         'runs': 0, 'ballLog': [], 'overs': 0, 'wickets': 0, 'noballs': 0}
         runObj = {}
         outObj = {}
@@ -1497,8 +1497,8 @@ def innings2(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
                         found = True
                     else:
                         index_l += 1
-             
-        # print(batter1['player']['playerInitials']) 
+
+        # print(batter1['player']['playerInitials'])
         # print(batter2['player']['playerInitials'])
 
     def delivery(bowler, batter, over, is_free_hit=False):
@@ -1628,7 +1628,7 @@ def innings2(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
         return "LEGAL"
 
     # Removed the old nested getOutcome function as it's replaced by getOutcome_standalone
-        
+
         # sumLast10 = 0
         # outsLast10 = 0
         for i in ballLog:
@@ -1698,7 +1698,7 @@ def innings2(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
             denAvg['4'] += adjust * (1.6/3)
             denAvg['6'] += adjust * (1.9/3)
             outAvg += 0.02
-    
+
         rr = 0
         if(balls != 0):
             rr = runs / balls
@@ -1786,7 +1786,7 @@ def innings2(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
                     denAvg['2'] -= adjust * (1/3)
                     outAvg += 0.015
                     getOutcome(denAvg, outAvg, over)
-                    
+
                 else:
                     adjust = random.uniform(0.04, 0.08)
                     denAvg['6'] += adjust * (0.95/3)
@@ -1798,7 +1798,7 @@ def innings2(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
                     getOutcome(denAvg, outAvg, over)
 
 
-                
+
 
             elif(rrro > 10.4 and rrro < 12):
                 if(wickets < 3):
@@ -1822,7 +1822,7 @@ def innings2(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
                     outAvg += 0.035
                     getOutcome(denAvg, outAvg, over)
 
-                
+
 
             elif(rrro >= 12 and rrro <= 15):
                 if(balls > 85):
@@ -1901,7 +1901,7 @@ def innings2(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
                 getOutcome(denAvg, outAvg, over)
             #logic for last 3 overs chase
             pass
-                    
+
         if(runs == (target - 1) and (balls == 120 or wickets == 10)):
             print("Match tied")
             winner = "tie"
@@ -1949,7 +1949,7 @@ def innings2(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
         #         adjust = random.uniform(0.04, 0.8)
         #         denAvg['1'] += adjust * (1/3) * (wickets / 2)
         #         denAvg['4'] -= adjust * (2/3) * (wickets / 2)
-        #         denAvg['6'] -= adjust * (1/3) * (wickets / 2)  
+        #         denAvg['6'] -= adjust * (1/3) * (wickets / 2)
         #         denAvg['2'] += adjust * (1/3) * (wickets / 2)
         #         denAvg['0'] += adjust * (1/3) * (wickets / 2)
 
@@ -1972,7 +1972,7 @@ def innings2(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
                 else: # Both batters are None, innings should end
                     print(f"Innings2 Over {i+1}: Both batters are None. Ending innings.")
                     break
-        
+
         if targetChased or wickets == 10 : break # Check before starting the over
 
         current_bowler_obj = None
@@ -2077,7 +2077,7 @@ def innings2(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
             break
 
         if targetChased or wickets == 10: break # Break outer over loop if innings ended mid-over
-            
+
     # print(batterTracker)
     # print(bowlerTracker)
 
@@ -2152,12 +2152,12 @@ def innings2(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
                 # Else, remains "DNB" if not in this range and didn't bat.
 
         batsmanTabulate.append([btckd_player_initials, runs_scored, balls_faced, sr_val, dismissal_status])
-        
+
     bowlerTabulate = []
     for btrack in bowlerTracker:
         localBowlerTabulate = [btrack, bowlerTracker[btrack]['runs']]
         overs_tb = 0
-        remainder_balls = bowlerTracker[btrack]['balls'] % 6 
+        remainder_balls = bowlerTracker[btrack]['balls'] % 6
         number_overs = bowlerTracker[btrack]['balls'] // 6
         localBowlerTabulate.append(f"{number_overs}.{remainder_balls}")
         localBowlerTabulate.append(bowlerTracker[btrack]['wickets'])
@@ -2181,8 +2181,10 @@ def innings2(batting, bowling, battingName, bowlingName, pace, spin, outfield, d
 def game(manual=True, sentTeamOne=None, sentTeamTwo=None, switch="group"):
     global innings1Batting, innings1Bowling, innings2Batting, innings2Bowling, innings1Balls, innings2Balls
     global innings1Log, innings2Log, innings1Battracker, innings2Battracker, innings2Bowltracker, innings1Bowltracker
-    global innings1Runs, innings2Runs
+    global innings1Runs, innings2Runs, winner, winMsg
 
+    winner = None
+    winMsg = None
     innings1Batting = None
     innings1Bowling = None
     innings2Batting = None
@@ -2211,7 +2213,7 @@ def game(manual=True, sentTeamOne=None, sentTeamTwo=None, switch="group"):
 
     # pitchTypeInput = input("Enter type of pitch (green, dusty, or dead) ")
     pitchTypeInput = "dusty"
-    stdoutOrigin=sys.stdout 
+    stdoutOrigin=sys.stdout
     sys.stdout = open(f"scores/{team_one_inp}v{team_two_inp}_{switch}.txt", "w")
 
     # f = open("matches/csk_v_rr.txt", "r")
@@ -2317,7 +2319,7 @@ def game(manual=True, sentTeamOne=None, sentTeamTwo=None, switch="group"):
     # print(innings2Log)
     # Ensure 'balls' in innings summary is the total legal balls bowled.
     # The 'balls' variable within innings functions was modified to track legal balls.
-    return {"innings1Batting": innings1Batting, "innings1Bowling": innings1Bowling, "innings2Batting": innings2Batting, 
+    return {"innings1Batting": innings1Batting, "innings1Bowling": innings1Bowling, "innings2Batting": innings2Batting,
             "innings2Bowling": innings2Bowling, "innings2Balls": innings2Balls, "innings1Balls": innings1Balls, # Use actual legal balls for innings1
             "innings1Runs": innings1Runs, "innings2Runs": innings2Runs, "winMsg": winMsg, "innings1Battracker": innings1Battracker,
             "innings2Battracker": innings2Battracker, "innings1Bowltracker": innings1Bowltracker, "innings2Bowltracker": innings2Bowltracker,
