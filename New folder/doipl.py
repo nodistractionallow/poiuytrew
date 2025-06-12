@@ -21,7 +21,7 @@ bowlingInfo = {}
 # Initialize points table
 for team in teams:
     points[team] = {
-        "P": 0, "W": 0, "L": 0, "T": 0,
+        "P": 0, "W": 0, "L": 0, "T": 0, "SO": 0,
         "runsScored": 0, "ballsFaced": 0,
         "runsConceded": 0, "ballsBowled": 0,
         "pts": 0
@@ -156,7 +156,7 @@ def display_points_table():
         nrr = 0
         if data['ballsFaced'] > 0 and data['ballsBowled'] > 0:
             nrr = (data['runsScored'] / data['ballsFaced']) * 6 - (data['runsConceded'] / data['ballsBowled']) * 6
-        row = [team.upper(), data['P'], data['W'], data['L'], data['T'], round(nrr, 2), data['pts']]
+        row = [team.upper(), data['P'], data['W'], data['L'], data['T'], data['SO'], round(nrr, 2), data['pts']]
         pointsTabulate.append(row)
     pointsTabulate = sorted(pointsTabulate, key=lambda x: (x[6], x[5]), reverse=True)
     print("\nCurrent Points Table:")
@@ -459,6 +459,8 @@ for team1, team2 in scheduled_matches:
                 for t in [team1, team2]:
                     points[t]['T'] += 1
                     points[t]['pts'] += 1
+                points[team1]['SO'] += 1
+                points[team2]['SO'] += 1
             else:
                 points[winner]['W'] += 1
                 points[loser]['L'] += 1
